@@ -36,7 +36,11 @@ const transfer = async (options: {
         } else {
             rpcUrl = NETWORK_RPC_URLS[options.network]
         }
+
+        var tempConsoleWarn = console.warn;
+        console.warn = () => {};
         const api = await initialize(rpcUrl, { noInitWarn: true })
+        console.warn = tempConsoleWarn;
         const keyring = getKeyringFromSeed(seed)
         const amount = formatNumberToBalance(options.value)
 
