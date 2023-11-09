@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "script": "tsc && node index.js"
+    "script": "tsc && node index.js",
+    "lint": "npx ts-standard --fix"
   },
   "author": "QEDK",
   "license": "Apache-2.0",
@@ -13,6 +14,7 @@
     "commander": "^11.1.0"
   },
   "devDependencies": {
+    "ts-standard": "^12.0.2",
     "typescript": "^5.2.2"
   }
 }
