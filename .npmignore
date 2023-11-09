@@ -1,2 +1,4 @@
 node_modules
 .DS_Store
+index.ts
+tsconfig.json

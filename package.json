@@ -1,11 +1,10 @@
 {
   "name": "@availproject/cli",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "A simple CLI for Avail utilities",
   "main": "build/index.js",
   "scripts": {
     "build": "tsc",
-    "publish": "tsc && npm publish",
     "script": "tsc && node index.js",
     "lint": "npx ts-standard --fix"
   },
@@ -19,5 +18,7 @@
     "ts-standard": "^12.0.2",
     "typescript": "^5.2.2"
   },
-  "bin": "build/index.js"
+  "bin": {
+    "avail-cli": "build/index.js"
+  }
 }
