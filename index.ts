@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 import { Command, Option } from 'commander'
 import { initialize, formatNumberToBalance, getKeyringFromSeed, isValidAddress } from 'avail-js-sdk'
 const program = new Command()
