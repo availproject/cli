@@ -1,10 +1,10 @@
 {
   "name": "@availproject/cli",
-  "version": "0.1.2",
+  "version": "0.1.4",
   "description": "A simple CLI for Avail utilities",
   "main": "build/index.js",
   "bugs": "https://github.com/availproject/cli/issues",
-  "homepage": "https://github.com/github.com/availproject/cli#readme",
+  "homepage": "https://github.com/availproject/cli#readme",
   "repository": {
     "type": "git",
     "url": "https://github.com/availproject/cli.git"
