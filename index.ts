@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-'use strict';
+'use strict'
 import { Command, Option } from 'commander'
 import { initialize, formatNumberToBalance, getKeyringFromSeed, isValidAddress } from 'avail-js-sdk'
 import { spawn } from 'child_process'
@@ -58,11 +58,12 @@ const transfer = async (options: {
 }
 
 const lc = async (options: {
-  network: NetworkNames, config: string
+  network: NetworkNames
+  config: string
 }): Promise<void> => {
   try {
     let cmd = `curl -sL1 avail.sh | sh -s -- --network ${options.network}`
-    if (typeof(options.config) !== 'undefined') {
+    if (typeof (options.config) !== 'undefined') {
       cmd = cmd.concat(` --config ${options.config}`)
     }
     const child: any = spawn(cmd, { cwd: process.cwd(), shell: true, stdio: 'inherit' })
