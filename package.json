@@ -36,6 +36,6 @@
     "typescript": "^5.2.2"
   },
   "bin": {
-    "avail-cli": "build/index.js"
+    "avail": "build/index.js"
   }
 }

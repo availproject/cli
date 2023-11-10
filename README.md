@@ -7,5 +7,5 @@ npm install -g @availproject/cli
 
 To use the CLI, then run:
 ```sh
-avail-cli --help
+avail --help
 ```
