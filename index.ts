@@ -3,6 +3,7 @@
 import { Command, Option } from 'commander'
 import { initialize, formatNumberToBalance, getKeyringFromSeed, isValidAddress } from 'avail-js-sdk'
 import { spawn } from 'child_process'
+import { version } from './package.json'
 const program = new Command()
 
 enum NetworkNames {
@@ -20,7 +21,7 @@ const NETWORK_RPC_URLS: { kate: string, goldberg: string, local: string } = {
 program
   .name('avail-cli')
   .description('A simple CLI for Avail network utilities')
-  .version('0.1.0')
+  .version(version)
 
 const transfer = async (options: {
   seed: string
