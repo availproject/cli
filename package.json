@@ -1,6 +1,6 @@
 {
   "name": "@availproject/cli",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A simple CLI for Avail utilities",
   "main": "build/index.js",
   "bugs": "https://github.com/availproject/cli/issues",
@@ -22,7 +22,8 @@
   ],
   "scripts": {
     "build": "tsc",
-    "script": "tsc && node index.js",
+    "build:publish": "tsc && npm publish --access=public",
+    "script": "tsc && node build/index.js",
     "lint": "npx ts-standard --fix"
   },
   "author": "QEDK",
