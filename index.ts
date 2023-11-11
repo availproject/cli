@@ -81,7 +81,7 @@ const lc = async (options: {
 }
 
 program
-  .command('transfer')
+  .command('transfer').description('Transfer AVL token to another account')
   .addOption(new Option('-n, --network <network name>', 'network name').choices(['kate', 'goldberg', 'local']).default('goldberg').conflicts('rpc'))
   .addOption(new Option('-r, --rpc <RPC url>', 'the RPC url to connect to').env('AVAIL_RPC_URL').default(NETWORK_RPC_URLS.goldberg))
   .addOption(new Option('-s, --seed <seed phrase>', 'the seed phrase for the Avail account').env('AVAIL_SEED').makeOptionMandatory())
@@ -90,7 +90,7 @@ program
   .action(transfer)
 
 program
-  .command('lc')
+  .command('lc').description('Launch an Avail light client')
   .addOption(new Option('-n, --network <network name>', 'network name').choices(['kate', 'goldberg', 'local']).default('goldberg').makeOptionMandatory())
   .option('-c, --config <path to config file>', 'the config file to use')
   .action(lc)
