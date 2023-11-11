@@ -61,7 +61,7 @@ const transfer = async (to: string, value: number, options: {
 const data = async (blob: string, options: {
   seed: string
   network: NetworkNames
-  rpc: string,
+  rpc: string
   appId: number
 }): Promise<void> => {
   try {
