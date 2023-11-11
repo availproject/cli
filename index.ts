@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 'use strict'
-import { Command, Option } from 'commander'
+import { Argument, Command, Option } from 'commander'
 import { initialize, formatNumberToBalance, getKeyringFromSeed, isValidAddress } from 'avail-js-sdk'
 import { spawn } from 'child_process'
 import { version } from './package.json'
@@ -23,7 +23,7 @@ program
   .description('A simple CLI for Avail network utilities')
   .version(version)
 
-const transfer = async (options: {
+const transfer = async (to: string, value: number, options: {
   seed: string
   network: NetworkNames
   rpc: string
@@ -32,7 +32,7 @@ const transfer = async (options: {
 }): Promise<void> => {
   try {
     const seed = options.seed
-    const recipient = options.to
+    const recipient = to
 
     if (!isValidAddress(recipient)) throw new Error(recipient + ' recipient address is invalid')
 
@@ -48,9 +48,39 @@ const transfer = async (options: {
     const api = await initialize(rpcUrl, { noInitWarn: true })
     console.warn = tempConsoleWarn
     const keyring = getKeyringFromSeed(seed)
-    const amount = formatNumberToBalance(options.value)
+    const amount = formatNumberToBalance(value)
 
     await api.tx.balances.transfer(recipient, amount).signAndSend(keyring, { nonce: -1 })
+    process.exit(0)
+  } catch (err) {
+    console.error(err)
+    process.exit(1)
+  }
+}
+
+const data = async (blob: string, options: {
+  seed: string
+  network: NetworkNames
+  rpc: string,
+  appId: number
+}): Promise<void> => {
+  try {
+    const seed = options.seed
+
+    let rpcUrl: string
+    if (typeof (NETWORK_RPC_URLS[options.network]) === 'undefined') {
+      rpcUrl = options.rpc
+    } else {
+      rpcUrl = NETWORK_RPC_URLS[options.network]
+    }
+
+    const tempConsoleWarn = console.warn
+    console.warn = () => {}
+    const api = await initialize(rpcUrl, { noInitWarn: true })
+    console.warn = tempConsoleWarn
+    const keyring = getKeyringFromSeed(seed)
+
+    await api.tx.dataAvailability.submitData(blob).signAndSend(keyring, { app_id: options.appId, nonce: -1 } as any)
     process.exit(0)
   } catch (err) {
     console.error(err)
@@ -85,12 +115,23 @@ program
   .addOption(new Option('-n, --network <network name>', 'network name').choices(['kate', 'goldberg', 'local']).default('goldberg').conflicts('rpc'))
   .addOption(new Option('-r, --rpc <RPC url>', 'the RPC url to connect to').env('AVAIL_RPC_URL').default(NETWORK_RPC_URLS.goldberg))
   .addOption(new Option('-s, --seed <seed phrase>', 'the seed phrase for the Avail account').env('AVAIL_SEED').makeOptionMandatory())
-  .requiredOption('--to <recipient address>', 'the recipient address')
-  .requiredOption('--value <amount in AVL>', 'the value in AVL (10e18) to transfer')
+  .argument('<to>', 'the recipient address')
+  .argument('<value>', 'the amount of AVL (10e18 units) to transfer')
   .action(transfer)
 
 program
-  .command('lc').description('Launch an Avail light client')
+  .command('data').description('Utilities to operate with data on Avail network')
+  .command('submit').description('Submit a data blob to an Avail network')
+  .addOption(new Option('-n, --network <network name>', 'network name').choices(['kate', 'goldberg', 'local']).default('goldberg').conflicts('rpc'))
+  .addOption(new Option('-r, --rpc <RPC url>', 'the RPC url to connect to').env('AVAIL_RPC_URL').default(NETWORK_RPC_URLS.goldberg))
+  .addOption(new Option('-s, --seed <seed phrase>', 'the seed phrase for the Avail account').env('AVAIL_SEED').makeOptionMandatory())
+  .addOption(new Option('-a, --app-id <app ID>', 'the blob will be submitted with this app ID').default(0))
+  .addArgument(new Argument('<blob>', 'the data blob to submit'))
+  .action(data)
+
+program
+  .command('lc').description('Utilities to operate an Avail light client')
+  .command('up').description('Spawns a new Avail light client or runs an existing one')
   .addOption(new Option('-n, --network <network name>', 'network name').choices(['kate', 'goldberg', 'local']).default('goldberg').makeOptionMandatory())
   .option('-c, --config <path to config file>', 'the config file to use')
   .action(lc)
