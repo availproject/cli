@@ -2,7 +2,7 @@
 
 To install the CLI from `npm`, run the following command:
 ```sh
-npm install -g @availproject/cli
+npm i -g @availproject/cli
 ```
 
 To use the CLI, then run:

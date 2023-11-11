@@ -1,6 +1,6 @@
 {
   "name": "@availproject/cli",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "A simple CLI for Avail utilities",
   "main": "build/index.js",
   "bugs": "https://github.com/availproject/cli/issues",
