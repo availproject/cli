@@ -31,10 +31,8 @@ const transfer = async (to: string, value: number, options: {
   value: number
 }): Promise<void> => {
   try {
+    if (!isValidAddress(to)) throw new Error(to + ' recipient address is invalid')
     const seed = options.seed
-    const recipient = to
-
-    if (!isValidAddress(recipient)) throw new Error(recipient + ' recipient address is invalid')
 
     let rpcUrl: string
     if (typeof (NETWORK_RPC_URLS[options.network]) === 'undefined') {
@@ -50,7 +48,8 @@ const transfer = async (to: string, value: number, options: {
     const keyring = getKeyringFromSeed(seed)
     const amount = formatNumberToBalance(value)
 
-    await api.tx.balances.transfer(recipient, amount).signAndSend(keyring, { nonce: -1 })
+    await api.tx.balances.transfer(to, amount).signAndSend(keyring, { nonce: -1 })
+    console.log(`✅ ${value} AVL successfully sent to ${to}`)
     process.exit(0)
   } catch (err) {
     console.error(err)
@@ -81,6 +80,7 @@ const data = async (blob: string, options: {
     const keyring = getKeyringFromSeed(seed)
 
     await api.tx.dataAvailability.submitData(blob).signAndSend(keyring, { app_id: options.appId, nonce: -1 } as any)
+    console.log('✅ Data blob sent to Avail')
     process.exit(0)
   } catch (err) {
     console.error(err)
