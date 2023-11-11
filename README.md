@@ -15,13 +15,19 @@ avail --help
 You can use the `transfer` command to transfer on any Avail network:
 ```sh
 export AVAIL_SEED=<your seed phrase>
-avail transfer --network <network> --to <recipient> --value <amount>
+avail transfer --network <network> <to> <value>
 # or you can pass it like:
-AVAIL_SEED=<your seed phrase> avail transfer --network <network> --to <recipient> --value <amount>
+AVAIL_SEED=<your seed phrase> avail transfer --network <network> <to> <value>
 ```
 
 ### `lc`
 You can use the `lc` command to spin up a light client on a network of your choice:
 ```sh
-avail lc --network <network>
+avail lc up --network <network>
+```
+
+### `data`
+You can use the `data` command to submit a data blob on a network of your choice:
+```sh
+avail data submit --network <network> <blob>
 ```
