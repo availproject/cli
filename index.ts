@@ -19,7 +19,7 @@ const NETWORK_RPC_URLS: { kate: string, goldberg: string, local: string } = {
 }
 
 program
-  .name('avail-cli')
+  .name('avail')
   .description('A simple CLI for Avail network utilities')
   .version(version)
 
