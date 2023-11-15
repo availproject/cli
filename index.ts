@@ -29,7 +29,7 @@ const NETWORK_RPC_URLS: { kate: string, goldberg: string, local: string } = {
 program
   .name('avail')
   .description('A simple CLI for Avail network utilities')
-  .version('0.1.10')
+  .version('0.1.11')
 
 const sendTransferTx = async (api: any, to: string, amount: BN, keyring: KeyringPair, opt: Partial<any>, network: NetworkNames, wait: Wait): Promise<void> => {
   return await new Promise((resolve, reject) => {
