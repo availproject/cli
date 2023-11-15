@@ -46,9 +46,7 @@ program
 const transfer = async (to: string, value: number, options: {
   seed: string
   network: NetworkNames
-  rpc: string
-  to: string
-  value: number,
+  rpc: string,
   wait: boolean,
 }): Promise<void> => {
   try {
@@ -68,11 +66,10 @@ const transfer = async (to: string, value: number, options: {
     console.warn = tempConsoleWarn
     const keyring = getKeyringFromSeed(seed)
     const amount = formatNumberToBalance(value)
-
     if (options.wait) {
-      await sendTransferTx(api, to, amount, keyring, { nonce: -1 }, options.network)
+      await sendTransferTx(api, to, amount, keyring, { nonce: -1 } as Partial<any>, options.network)
     } else {
-      await api.tx.balances.transfer(to, amount).signAndSend(keyring, { nonce: -1 })
+      await api.tx.balances.transfer(to, amount).signAndSend(keyring, { nonce: -1 } as Partial<any>)
     }
     console.log(`✅ ${value} AVL successfully sent to ${to}`)
     process.exit(0)
@@ -163,7 +160,7 @@ program
   .addOption(new Option('-n, --network <network name>', 'network name').choices(['kate', 'goldberg', 'local']).default('goldberg').conflicts('rpc'))
   .addOption(new Option('-r, --rpc <RPC url>', 'the RPC url to connect to').env('AVAIL_RPC_URL').default(NETWORK_RPC_URLS.goldberg))
   .addOption(new Option('-s, --seed <seed phrase>', 'the seed phrase for the Avail account').env('AVAIL_SEED').makeOptionMandatory())
-  .option('-w, --w', 'wait for extrinsic inclusion')
+  .option('-w, --wait', 'wait for extrinsic inclusion')
   .argument('<to>', 'the recipient address')
   .argument('<value>', 'the amount of AVL (10e18 units) to transfer')
   .action(transfer)
