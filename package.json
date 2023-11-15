@@ -20,15 +20,17 @@
     "typescript",
     "cli"
   ],
+  "type":"module",
   "scripts": {
     "build": "tsc",
     "build:publish": "tsc && npm publish --access=public",
-    "script": "tsc && node build/index.js",
+    "script": "tsc && node index.js",
     "lint": "npx ts-standard --fix"
   },
   "author": "QEDK",
   "license": "Apache-2.0",
   "dependencies": {
+    "@polkadot/api": "10.10.1",
     "avail-js-sdk": "^0.1.2",
     "commander": "^11.1.0"
   },

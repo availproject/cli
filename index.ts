@@ -2,8 +2,12 @@
 'use strict'
 import { Argument, Command, Option } from 'commander'
 import { initialize, formatNumberToBalance, getKeyringFromSeed, isValidAddress } from 'avail-js-sdk'
+import { ApiPromise } from '@polkadot/api';
+import { ISubmittableResult, SignatureOptions } from '@polkadot/types/types';
+import { KeyringPair } from '@polkadot/keyring/types';
+import { H256 } from '@polkadot/types/interfaces';
 import { spawn } from 'child_process'
-import { version } from './package.json'
+// import { version } from './package.json'  assert { type: "json" };
 const program = new Command()
 
 enum NetworkNames {
@@ -21,7 +25,6 @@ const NETWORK_RPC_URLS: { kate: string, goldberg: string, local: string } = {
 program
   .name('avail')
   .description('A simple CLI for Avail network utilities')
-  .version(version)
 
 const transfer = async (to: string, value: number, options: {
   seed: string
@@ -57,34 +60,76 @@ const transfer = async (to: string, value: number, options: {
   }
 }
 
-const data = async (blob: string, options: {
-  seed: string
-  network: NetworkNames
-  rpc: string
-  appId: number
-}): Promise<void> => {
+const sendTx = async (api: any, blob: string, keyring: KeyringPair, opt: Partial<any>): Promise<void> => {
+  return new Promise((resolve, reject) => {
+    api.tx.dataAvailability.submitData(blob)
+      .signAndSend(keyring, opt, (result: ISubmittableResult) => {
+
+        if (result.status.isInBlock) {
+          console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
+        }
+        if (result.status.isFinalized) {
+          console.log(`Transaction included at blockHash ${result.status.asFinalized}`);
+          resolve();
+        }
+      })
+      .catch((error: any) => {
+        console.error('Transaction failed:', error);
+        reject(error); // Reject the promise on error
+      });
+  });
+};
+
+
+
+
+async function data(blob: string, options: {
+  seed: string;
+  network: NetworkNames;
+  rpc: string;
+  appId: number;
+}): Promise<void> {
   try {
-    const seed = options.seed
+    const seed = options.seed;
 
-    let rpcUrl: string
+    let rpcUrl: string;
     if (typeof (NETWORK_RPC_URLS[options.network]) === 'undefined') {
-      rpcUrl = options.rpc
+      rpcUrl = options.rpc;
     } else {
-      rpcUrl = NETWORK_RPC_URLS[options.network]
+      rpcUrl = NETWORK_RPC_URLS[options.network];
     }
+    interface SignatureOptionsNew extends SignatureOptions {
+      app_id: number;
+    }
+    const tempConsoleWarn = console.warn;
+    console.warn = () => { };
+    const api = await initialize(rpcUrl, { noInitWarn: true });
+    console.warn = tempConsoleWarn;
+    const keyring = getKeyringFromSeed(seed);
+    const opt: Partial<any> = { app_id: options.appId, nonce: -1 };
 
-    const tempConsoleWarn = console.warn
-    console.warn = () => {}
-    const api = await initialize(rpcUrl, { noInitWarn: true })
-    console.warn = tempConsoleWarn
-    const keyring = getKeyringFromSeed(seed)
 
-    await api.tx.dataAvailability.submitData(blob).signAndSend(keyring, { app_id: options.appId, nonce: -1 } as any)
-    console.log('✅ Data blob sent to Avail')
-    process.exit(0)
+    //   await api.tx.dataAvailability.submitData(blob).signAndSend(
+    //     keyring,  // sender
+    //     opt, // options
+    //     (result: ISubmittableResult) => {
+    //         //uncomment the below line👇 to see the whole status flow of the transaction
+    //         // console.log(`Tx status: ${result.status}`);
+    //         if (result.status.isReady) {
+    //             console.log(`result is ready`)
+    //         }
+    //         if (result.status.isInBlock) {
+    //             let block_hash = result.status.asInBlock;
+    //             let extrinsic_hash = result.txHash;
+    //             console.log(`\nExtrinsic hash: ${result.txHash} is in block`);
+    // }
+    //     })
+    await sendTx(api, blob, keyring, opt);
+    console.log('✅ Data blob sent to Avail');
+    process.exit(0);
   } catch (err) {
-    console.error(err)
-    process.exit(1)
+    console.error(err);
+    process.exit(1);
   }
 }
 
