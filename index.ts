@@ -2,12 +2,9 @@
 'use strict'
 import { Argument, Command, Option } from 'commander'
 import { initialize, formatNumberToBalance, getKeyringFromSeed, isValidAddress } from 'avail-js-sdk'
-import { ApiPromise } from '@polkadot/api';
-import { ISubmittableResult, SignatureOptions } from '@polkadot/types/types';
+import { ISubmittableResult } from '@polkadot/types/types';
 import { KeyringPair } from '@polkadot/keyring/types';
-import { H256 } from '@polkadot/types/interfaces';
 import { spawn } from 'child_process'
-// import { version } from './package.json'  assert { type: "json" };
 const program = new Command()
 
 enum NetworkNames {
@@ -25,6 +22,7 @@ const NETWORK_RPC_URLS: { kate: string, goldberg: string, local: string } = {
 program
   .name('avail')
   .description('A simple CLI for Avail network utilities')
+  .version('0.1.9')
 
 const transfer = async (to: string, value: number, options: {
   seed: string
@@ -60,34 +58,30 @@ const transfer = async (to: string, value: number, options: {
   }
 }
 
-const sendTx = async (api: any, blob: string, keyring: KeyringPair, opt: Partial<any>): Promise<void> => {
+const sendBlobTx = async (api: any, blob: string, keyring: KeyringPair, opt: Partial<any>, network: NetworkNames): Promise<void> => {
   return new Promise((resolve, reject) => {
     api.tx.dataAvailability.submitData(blob)
       .signAndSend(keyring, opt, (result: ISubmittableResult) => {
-
-        if (result.status.isInBlock) {
-          console.log(`Transaction included at blockHash ${result.status.asInBlock}`);
-        }
-        if (result.status.isFinalized) {
-          console.log(`Transaction included at blockHash ${result.status.asFinalized}`);
+        if (result.status.isInBlock || result.status.isFinalized) {
+          console.log(`✅ Blob included at block hash: ${result.status.asInBlock ?? result.status.asFinalized}`);
+          if (typeof(network) !== 'undefined') {
+            console.log(`🧭 Link to explorer: https://${network}.avail.tools/#/explorer/query/${result.status.asInBlock ?? result.status.asFinalized}`)
+          }
           resolve();
         }
       })
       .catch((error: any) => {
-        console.error('Transaction failed:', error);
-        reject(error); // Reject the promise on error
+        reject('❌ Transaction failed: ' + error);
       });
   });
 };
-
-
-
 
 async function data(blob: string, options: {
   seed: string;
   network: NetworkNames;
   rpc: string;
   appId: number;
+  wait: boolean;
 }): Promise<void> {
   try {
     const seed = options.seed;
@@ -98,34 +92,19 @@ async function data(blob: string, options: {
     } else {
       rpcUrl = NETWORK_RPC_URLS[options.network];
     }
-    interface SignatureOptionsNew extends SignatureOptions {
-      app_id: number;
-    }
+
     const tempConsoleWarn = console.warn;
     console.warn = () => { };
     const api = await initialize(rpcUrl, { noInitWarn: true });
     console.warn = tempConsoleWarn;
     const keyring = getKeyringFromSeed(seed);
     const opt: Partial<any> = { app_id: options.appId, nonce: -1 };
-
-
-    //   await api.tx.dataAvailability.submitData(blob).signAndSend(
-    //     keyring,  // sender
-    //     opt, // options
-    //     (result: ISubmittableResult) => {
-    //         //uncomment the below line👇 to see the whole status flow of the transaction
-    //         // console.log(`Tx status: ${result.status}`);
-    //         if (result.status.isReady) {
-    //             console.log(`result is ready`)
-    //         }
-    //         if (result.status.isInBlock) {
-    //             let block_hash = result.status.asInBlock;
-    //             let extrinsic_hash = result.txHash;
-    //             console.log(`\nExtrinsic hash: ${result.txHash} is in block`);
-    // }
-    //     })
-    await sendTx(api, blob, keyring, opt);
-    console.log('✅ Data blob sent to Avail');
+    if (options.wait) {
+      await sendBlobTx(api, blob, keyring, opt, options.network);
+    } else {
+      await api.tx.dataAvailability.submitData(blob).signAndSend(keyring, opt);
+      console.log('✅ Data blob sent to Avail');
+    }
     process.exit(0);
   } catch (err) {
     console.error(err);
@@ -171,6 +150,7 @@ program
   .addOption(new Option('-r, --rpc <RPC url>', 'the RPC url to connect to').env('AVAIL_RPC_URL').default(NETWORK_RPC_URLS.goldberg))
   .addOption(new Option('-s, --seed <seed phrase>', 'the seed phrase for the Avail account').env('AVAIL_SEED').makeOptionMandatory())
   .addOption(new Option('-a, --app-id <app ID>', 'the blob will be submitted with this app ID').default(0))
+  .option('-w, --wait', 'wait for extrinsic inclusion')
   .addArgument(new Argument('<blob>', 'the data blob to submit'))
   .action(data)
 

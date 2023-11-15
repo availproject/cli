@@ -20,7 +20,7 @@
     "typescript",
     "cli"
   ],
-  "type":"module",
+  "type": "module",
   "scripts": {
     "build": "tsc",
     "build:publish": "tsc && npm publish --access=public",
@@ -35,6 +35,7 @@
     "commander": "^11.1.0"
   },
   "devDependencies": {
+    "@polkadot/types": "^10.10.1",
     "@types/node": "^20.9.0",
     "ts-standard": "^12.0.2",
     "typescript": "^5.2.2"
