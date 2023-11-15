@@ -4,6 +4,7 @@ import { Argument, Command, Option } from 'commander'
 import { initialize, formatNumberToBalance, getKeyringFromSeed, isValidAddress } from 'avail-js-sdk'
 import { ISubmittableResult } from '@polkadot/types/types';
 import { KeyringPair } from '@polkadot/keyring/types';
+import { BN } from "@polkadot/util";
 import { spawn } from 'child_process'
 const program = new Command()
 
@@ -24,12 +25,31 @@ program
   .description('A simple CLI for Avail network utilities')
   .version('0.1.9')
 
+  const sendTransferTx = async (api: any, to: string, amount: BN, keyring: KeyringPair, opt: Partial<any>, network: NetworkNames): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      api.tx.balances.transfer(to, amount)
+        .signAndSend(keyring, opt, (result: ISubmittableResult) => {
+          if (result.status.isInBlock || result.status.isFinalized) {
+            console.log(`✅ Transfer included at block hash: ${result.status.asInBlock ?? result.status.asFinalized}`);
+            if (typeof(network) !== 'undefined') {
+              console.log(`🧭 Link to explorer: https://${network}.avail.tools/#/explorer/query/${result.status.asInBlock ?? result.status.asFinalized}`)
+            }
+            resolve();
+          }
+        })
+        .catch((error: any) => {
+          reject('❌ Transaction failed: ' + error);
+        });
+    });
+  };
+
 const transfer = async (to: string, value: number, options: {
   seed: string
   network: NetworkNames
   rpc: string
   to: string
-  value: number
+  value: number,
+  wait: boolean,
 }): Promise<void> => {
   try {
     if (!isValidAddress(to)) throw new Error(to + ' recipient address is invalid')
@@ -49,7 +69,11 @@ const transfer = async (to: string, value: number, options: {
     const keyring = getKeyringFromSeed(seed)
     const amount = formatNumberToBalance(value)
 
-    await api.tx.balances.transfer(to, amount).signAndSend(keyring, { nonce: -1 })
+    if (options.wait) {
+      await sendTransferTx(api, to, amount, keyring, { nonce: -1 }, options.network)
+    } else {
+      await api.tx.balances.transfer(to, amount).signAndSend(keyring, { nonce: -1 })
+    }
     console.log(`✅ ${value} AVL successfully sent to ${to}`)
     process.exit(0)
   } catch (err) {
@@ -77,11 +101,11 @@ const sendBlobTx = async (api: any, blob: string, keyring: KeyringPair, opt: Par
 };
 
 async function data(blob: string, options: {
-  seed: string;
-  network: NetworkNames;
-  rpc: string;
-  appId: number;
-  wait: boolean;
+  seed: string,
+  network: NetworkNames,
+  rpc: string,
+  appId: number,
+  wait: boolean,
 }): Promise<void> {
   try {
     const seed = options.seed;
@@ -103,8 +127,8 @@ async function data(blob: string, options: {
       await sendBlobTx(api, blob, keyring, opt, options.network);
     } else {
       await api.tx.dataAvailability.submitData(blob).signAndSend(keyring, opt);
-      console.log('✅ Data blob sent to Avail');
     }
+    console.log('✅ Data blob sent to Avail');
     process.exit(0);
   } catch (err) {
     console.error(err);
@@ -139,6 +163,7 @@ program
   .addOption(new Option('-n, --network <network name>', 'network name').choices(['kate', 'goldberg', 'local']).default('goldberg').conflicts('rpc'))
   .addOption(new Option('-r, --rpc <RPC url>', 'the RPC url to connect to').env('AVAIL_RPC_URL').default(NETWORK_RPC_URLS.goldberg))
   .addOption(new Option('-s, --seed <seed phrase>', 'the seed phrase for the Avail account').env('AVAIL_SEED').makeOptionMandatory())
+  .option('-w, --w', 'wait for extrinsic inclusion')
   .argument('<to>', 'the recipient address')
   .argument('<value>', 'the amount of AVL (10e18 units) to transfer')
   .action(transfer)
