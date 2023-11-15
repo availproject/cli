@@ -125,7 +125,6 @@ async function data (blob: string, options: {
 }): Promise<void> {
   try {
     const seed = options.seed
-    console.log(options.wait)
     let rpcUrl: string
     if (typeof (NETWORK_RPC_URLS[options.network]) === 'undefined') {
       rpcUrl = options.rpc
