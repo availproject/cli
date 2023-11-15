@@ -35,13 +35,13 @@ const sendTransferTx = async (api: any, to: string, amount: BN, keyring: Keyring
   return await new Promise((resolve, reject) => {
     api.tx.balances.transfer(to, amount)
       .signAndSend(keyring, opt, (result: ISubmittableResult) => {
-        if (wait == Wait.Yes && result.status.isInBlock) {
+        if (wait === Wait.Yes && result.status.isInBlock) {
           console.log(`✅ Transfer included at block hash: ${String(result.status.asInBlock)}`)
           if (typeof (network) !== 'undefined') {
             console.log(`🧭 Link to explorer: https://${network as string}.avail.tools/#/explorer/query/${String(result.status.asInBlock)}`)
           }
           resolve()
-        } else if (wait == Wait.Final && result.status.isFinalized) {
+        } else if (wait === Wait.Final && result.status.isFinalized) {
           console.log(`✅ Transfer finalized at block hash: ${String(result.status.asFinalized)}`)
           if (typeof (network) !== 'undefined') {
             console.log(`🧭 Link to explorer: https://${network as string}.avail.tools/#/explorer/query/${String(result.status.asFinalized)}`)
@@ -96,13 +96,13 @@ const sendBlobTx = async (api: any, blob: string, keyring: KeyringPair, opt: Par
   return await new Promise((resolve, reject) => {
     api.tx.dataAvailability.submitData(blob)
       .signAndSend(keyring, opt, (result: ISubmittableResult) => {
-        if (wait == Wait.Yes && result.status.isInBlock) {
+        if (wait === Wait.Yes && result.status.isInBlock) {
           console.log(`✅ Blob included at block hash: ${String(result.status.asInBlock)}`)
           if (typeof (network) !== 'undefined') {
             console.log(`🧭 Link to explorer: https://${network as string}.avail.tools/#/explorer/query/${String(result.status.asInBlock)}`)
           }
           resolve()
-        } else if (wait == Wait.Final && result.status.isFinalized) {
+        } else if (wait === Wait.Final && result.status.isFinalized) {
           console.log(`✅ Blob finalized at block hash: ${String(result.status.asFinalized)}`)
           if (typeof (network) !== 'undefined') {
             console.log(`🧭 Link to explorer: https://${network as string}.avail.tools/#/explorer/query/${String(result.status.asFinalized)}`)
