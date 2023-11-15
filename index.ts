@@ -14,6 +14,12 @@ enum NetworkNames {
   Local = 'local'
 }
 
+enum Wait {
+  Yes = 'yes',
+  No = 'no',
+  Final = 'final'
+}
+
 const NETWORK_RPC_URLS: { kate: string, goldberg: string, local: string } = {
   kate: 'wss://kate.avail.tools/ws',
   goldberg: 'wss://goldberg.avail.tools/ws',
@@ -25,14 +31,20 @@ program
   .description('A simple CLI for Avail network utilities')
   .version('0.1.9')
 
-const sendTransferTx = async (api: any, to: string, amount: BN, keyring: KeyringPair, opt: Partial<any>, network: NetworkNames): Promise<void> => {
+const sendTransferTx = async (api: any, to: string, amount: BN, keyring: KeyringPair, opt: Partial<any>, network: NetworkNames, wait: Wait): Promise<void> => {
   return await new Promise((resolve, reject) => {
     api.tx.balances.transfer(to, amount)
       .signAndSend(keyring, opt, (result: ISubmittableResult) => {
-        if (result.status.isInBlock || result.status.isFinalized) {
-          console.log(`✅ Transfer included at block hash: ${String(result.status.asInBlock) ?? String(result.status.asFinalized)}`)
+        if (wait == Wait.Yes && result.status.isInBlock) {
+          console.log(`✅ Transfer included at block hash: ${String(result.status.asInBlock)}`)
           if (typeof (network) !== 'undefined') {
-            console.log(`🧭 Link to explorer: https://${network as string}.avail.tools/#/explorer/query/${String(result.status.asInBlock) ?? String(result.status.asFinalized)}`)
+            console.log(`🧭 Link to explorer: https://${network as string}.avail.tools/#/explorer/query/${String(result.status.asInBlock)}`)
+          }
+          resolve()
+        } else if (wait == Wait.Final && result.status.isFinalized) {
+          console.log(`✅ Transfer finalized at block hash: ${String(result.status.asFinalized)}`)
+          if (typeof (network) !== 'undefined') {
+            console.log(`🧭 Link to explorer: https://${network as string}.avail.tools/#/explorer/query/${String(result.status.asFinalized)}`)
           }
           resolve()
         }
@@ -47,7 +59,7 @@ const transfer = async (to: string, value: number, options: {
   seed: string
   network: NetworkNames
   rpc: string
-  wait: boolean
+  wait: Wait
 }): Promise<void> => {
   try {
     if (!isValidAddress(to)) throw new Error(to + ' recipient address is invalid')
@@ -67,8 +79,8 @@ const transfer = async (to: string, value: number, options: {
     const keyring = getKeyringFromSeed(seed)
     const amount = formatNumberToBalance(value)
     const opt: Partial<any> = { nonce: -1 }
-    if (options.wait) {
-      await sendTransferTx(api, to, amount, keyring, opt, options.network)
+    if (options.wait !== Wait.No) {
+      await sendTransferTx(api, to, amount, keyring, opt, options.network, options.wait)
     } else {
       await api.tx.balances.transfer(to, amount).signAndSend(keyring, opt)
     }
@@ -80,14 +92,20 @@ const transfer = async (to: string, value: number, options: {
   }
 }
 
-const sendBlobTx = async (api: any, blob: string, keyring: KeyringPair, opt: Partial<any>, network: NetworkNames): Promise<void> => {
+const sendBlobTx = async (api: any, blob: string, keyring: KeyringPair, opt: Partial<any>, network: NetworkNames, wait: Wait): Promise<void> => {
   return await new Promise((resolve, reject) => {
     api.tx.dataAvailability.submitData(blob)
       .signAndSend(keyring, opt, (result: ISubmittableResult) => {
-        if (result.status.isInBlock || result.status.isFinalized) {
-          console.log(`✅ Blob included at block hash: ${String(result.status.asInBlock) ?? String(result.status.asFinalized)}`)
+        if (wait == Wait.Yes && result.status.isInBlock) {
+          console.log(`✅ Blob included at block hash: ${String(result.status.asInBlock)}`)
           if (typeof (network) !== 'undefined') {
-            console.log(`🧭 Link to explorer: https://${network as string}.avail.tools/#/explorer/query/${String(result.status.asInBlock) ?? String(result.status.asFinalized)}`)
+            console.log(`🧭 Link to explorer: https://${network as string}.avail.tools/#/explorer/query/${String(result.status.asInBlock)}`)
+          }
+          resolve()
+        } else if (wait == Wait.Final && result.status.isFinalized) {
+          console.log(`✅ Blob finalized at block hash: ${String(result.status.asFinalized)}`)
+          if (typeof (network) !== 'undefined') {
+            console.log(`🧭 Link to explorer: https://${network as string}.avail.tools/#/explorer/query/${String(result.status.asFinalized)}`)
           }
           resolve()
         }
@@ -103,11 +121,11 @@ async function data (blob: string, options: {
   network: NetworkNames
   rpc: string
   appId: number
-  wait: boolean
+  wait: Wait
 }): Promise<void> {
   try {
     const seed = options.seed
-
+    console.log(options.wait)
     let rpcUrl: string
     if (typeof (NETWORK_RPC_URLS[options.network]) === 'undefined') {
       rpcUrl = options.rpc
@@ -121,8 +139,8 @@ async function data (blob: string, options: {
     console.warn = tempConsoleWarn
     const keyring = getKeyringFromSeed(seed)
     const opt: Partial<any> = { app_id: options.appId, nonce: -1 }
-    if (options.wait) {
-      await sendBlobTx(api, blob, keyring, opt, options.network)
+    if (options.wait !== Wait.No) {
+      await sendBlobTx(api, blob, keyring, opt, options.network, options.wait)
     } else {
       await api.tx.dataAvailability.submitData(blob).signAndSend(keyring, opt)
     }
@@ -161,7 +179,7 @@ program
   .addOption(new Option('-n, --network <network name>', 'network name').choices(['kate', 'goldberg', 'local']).default('goldberg').conflicts('rpc'))
   .addOption(new Option('-r, --rpc <RPC url>', 'the RPC url to connect to').env('AVAIL_RPC_URL').default(NETWORK_RPC_URLS.goldberg))
   .addOption(new Option('-s, --seed <seed phrase>', 'the seed phrase for the Avail account').env('AVAIL_SEED').makeOptionMandatory())
-  .option('-w, --wait', 'wait for extrinsic inclusion')
+  .addOption(new Option('-w, --wait <status>', 'wait for extrinsic inclusion').choices(['yes', 'no', 'final']).default('yes'))
   .argument('<to>', 'the recipient address')
   .argument('<value>', 'the amount of AVL (10e18 units) to transfer')
   .action(transfer)
@@ -173,7 +191,7 @@ program
   .addOption(new Option('-r, --rpc <RPC url>', 'the RPC url to connect to').env('AVAIL_RPC_URL').default(NETWORK_RPC_URLS.goldberg))
   .addOption(new Option('-s, --seed <seed phrase>', 'the seed phrase for the Avail account').env('AVAIL_SEED').makeOptionMandatory())
   .addOption(new Option('-a, --app-id <app ID>', 'the blob will be submitted with this app ID').default(0))
-  .option('-w, --wait', 'wait for extrinsic inclusion')
+  .addOption(new Option('-w, --wait <status>', 'wait for extrinsic inclusion').choices(['yes', 'no', 'final']).default('yes'))
   .addArgument(new Argument('<blob>', 'the data blob to submit'))
   .action(data)
 
