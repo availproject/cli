@@ -2,9 +2,9 @@
 'use strict'
 import { Argument, Command, Option } from 'commander'
 import { initialize, formatNumberToBalance, getKeyringFromSeed, isValidAddress } from 'avail-js-sdk'
-import { ISubmittableResult } from '@polkadot/types/types';
-import { KeyringPair } from '@polkadot/keyring/types';
-import { BN } from "@polkadot/util";
+import { ISubmittableResult } from '@polkadot/types/types'
+import { KeyringPair } from '@polkadot/keyring/types'
+import { BN } from '@polkadot/util'
 import { spawn } from 'child_process'
 const program = new Command()
 
@@ -25,29 +25,29 @@ program
   .description('A simple CLI for Avail network utilities')
   .version('0.1.9')
 
-  const sendTransferTx = async (api: any, to: string, amount: BN, keyring: KeyringPair, opt: Partial<any>, network: NetworkNames): Promise<void> => {
-    return new Promise((resolve, reject) => {
-      api.tx.balances.transfer(to, amount)
-        .signAndSend(keyring, opt, (result: ISubmittableResult) => {
-          if (result.status.isInBlock || result.status.isFinalized) {
-            console.log(`✅ Transfer included at block hash: ${result.status.asInBlock ?? result.status.asFinalized}`);
-            if (typeof(network) !== 'undefined') {
-              console.log(`🧭 Link to explorer: https://${network}.avail.tools/#/explorer/query/${result.status.asInBlock ?? result.status.asFinalized}`)
-            }
-            resolve();
+const sendTransferTx = async (api: any, to: string, amount: BN, keyring: KeyringPair, opt: Partial<any>, network: NetworkNames): Promise<void> => {
+  return await new Promise((resolve, reject) => {
+    api.tx.balances.transfer(to, amount)
+      .signAndSend(keyring, opt, (result: ISubmittableResult) => {
+        if (result.status.isInBlock || result.status.isFinalized) {
+          console.log(`✅ Transfer included at block hash: ${String(result.status.asInBlock) ?? String(result.status.asFinalized)}`)
+          if (typeof (network) !== 'undefined') {
+            console.log(`🧭 Link to explorer: https://${network as string}.avail.tools/#/explorer/query/${String(result.status.asInBlock) ?? String(result.status.asFinalized)}`)
           }
-        })
-        .catch((error: any) => {
-          reject('❌ Transaction failed: ' + error);
-        });
-    });
-  };
+          resolve()
+        }
+      })
+      .catch((error: string) => {
+        reject(new Error('❌ Transaction failed: ' + error))
+      })
+  })
+}
 
 const transfer = async (to: string, value: number, options: {
   seed: string
   network: NetworkNames
-  rpc: string,
-  wait: boolean,
+  rpc: string
+  wait: boolean
 }): Promise<void> => {
   try {
     if (!isValidAddress(to)) throw new Error(to + ' recipient address is invalid')
@@ -66,10 +66,11 @@ const transfer = async (to: string, value: number, options: {
     console.warn = tempConsoleWarn
     const keyring = getKeyringFromSeed(seed)
     const amount = formatNumberToBalance(value)
+    const opt: Partial<any> = { nonce: -1 }
     if (options.wait) {
-      await sendTransferTx(api, to, amount, keyring, { nonce: -1 } as Partial<any>, options.network)
+      await sendTransferTx(api, to, amount, keyring, opt, options.network)
     } else {
-      await api.tx.balances.transfer(to, amount).signAndSend(keyring, { nonce: -1 } as Partial<any>)
+      await api.tx.balances.transfer(to, amount).signAndSend(keyring, opt)
     }
     console.log(`✅ ${value} AVL successfully sent to ${to}`)
     process.exit(0)
@@ -80,56 +81,56 @@ const transfer = async (to: string, value: number, options: {
 }
 
 const sendBlobTx = async (api: any, blob: string, keyring: KeyringPair, opt: Partial<any>, network: NetworkNames): Promise<void> => {
-  return new Promise((resolve, reject) => {
+  return await new Promise((resolve, reject) => {
     api.tx.dataAvailability.submitData(blob)
       .signAndSend(keyring, opt, (result: ISubmittableResult) => {
         if (result.status.isInBlock || result.status.isFinalized) {
-          console.log(`✅ Blob included at block hash: ${result.status.asInBlock ?? result.status.asFinalized}`);
-          if (typeof(network) !== 'undefined') {
-            console.log(`🧭 Link to explorer: https://${network}.avail.tools/#/explorer/query/${result.status.asInBlock ?? result.status.asFinalized}`)
+          console.log(`✅ Blob included at block hash: ${String(result.status.asInBlock) ?? String(result.status.asFinalized)}`)
+          if (typeof (network) !== 'undefined') {
+            console.log(`🧭 Link to explorer: https://${network as string}.avail.tools/#/explorer/query/${String(result.status.asInBlock) ?? String(result.status.asFinalized)}`)
           }
-          resolve();
+          resolve()
         }
       })
-      .catch((error: any) => {
-        reject('❌ Transaction failed: ' + error);
-      });
-  });
-};
+      .catch((error: string) => {
+        reject(new Error('❌ Transaction failed: ' + error))
+      })
+  })
+}
 
-async function data(blob: string, options: {
-  seed: string,
-  network: NetworkNames,
-  rpc: string,
-  appId: number,
-  wait: boolean,
+async function data (blob: string, options: {
+  seed: string
+  network: NetworkNames
+  rpc: string
+  appId: number
+  wait: boolean
 }): Promise<void> {
   try {
-    const seed = options.seed;
+    const seed = options.seed
 
-    let rpcUrl: string;
+    let rpcUrl: string
     if (typeof (NETWORK_RPC_URLS[options.network]) === 'undefined') {
-      rpcUrl = options.rpc;
+      rpcUrl = options.rpc
     } else {
-      rpcUrl = NETWORK_RPC_URLS[options.network];
+      rpcUrl = NETWORK_RPC_URLS[options.network]
     }
 
-    const tempConsoleWarn = console.warn;
-    console.warn = () => { };
-    const api = await initialize(rpcUrl, { noInitWarn: true });
-    console.warn = tempConsoleWarn;
-    const keyring = getKeyringFromSeed(seed);
-    const opt: Partial<any> = { app_id: options.appId, nonce: -1 };
+    const tempConsoleWarn = console.warn
+    console.warn = () => { }
+    const api = await initialize(rpcUrl, { noInitWarn: true })
+    console.warn = tempConsoleWarn
+    const keyring = getKeyringFromSeed(seed)
+    const opt: Partial<any> = { app_id: options.appId, nonce: -1 }
     if (options.wait) {
-      await sendBlobTx(api, blob, keyring, opt, options.network);
+      await sendBlobTx(api, blob, keyring, opt, options.network)
     } else {
-      await api.tx.dataAvailability.submitData(blob).signAndSend(keyring, opt);
+      await api.tx.dataAvailability.submitData(blob).signAndSend(keyring, opt)
     }
-    console.log('✅ Data blob sent to Avail');
-    process.exit(0);
+    console.log('✅ Data blob sent to Avail')
+    process.exit(0)
   } catch (err) {
-    console.error(err);
-    process.exit(1);
+    console.error(err)
+    process.exit(1)
   }
 }
 
