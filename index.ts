@@ -77,7 +77,7 @@ const transfer = async (to: string, value: number, options: {
     const api = await initialize(rpcUrl, { noInitWarn: true })
     console.warn = tempConsoleWarn
     const keyring = getKeyringFromSeed(seed)
-    const amount = formatNumberToBalance(value)
+    const amount = new BN(value * 1e18);
     const opt: Partial<any> = { nonce: -1 }
     if (options.wait !== Wait.No) {
       await sendTransferTx(api, to, amount, keyring, opt, options.network, options.wait)
