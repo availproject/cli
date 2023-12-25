@@ -73,11 +73,11 @@ const transfer = async (to: string, value: number, options: {
     }
 
     const tempConsoleWarn = console.warn
-    console.warn = () => {}
+    console.warn = () => { }
     const api = await initialize(rpcUrl, { noInitWarn: true })
     console.warn = tempConsoleWarn
     const keyring = getKeyringFromSeed(seed)
-    const amount = new BN(value * 1e18);
+    const amount = formatNumberToBalance(value);
     const opt: Partial<any> = { nonce: -1 }
     if (options.wait !== Wait.No) {
       await sendTransferTx(api, to, amount, keyring, opt, options.network, options.wait)
@@ -116,7 +116,7 @@ const sendBlobTx = async (api: any, blob: string, keyring: KeyringPair, opt: Par
   })
 }
 
-async function data (blob: string, options: {
+async function data(blob: string, options: {
   seed: string
   network: NetworkNames
   rpc: string
