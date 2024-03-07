@@ -6,7 +6,7 @@ import { ISubmittableResult } from '@polkadot/types/types'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { BN } from '@polkadot/util'
 import { spawn } from 'child_process'
-import { writeFile, chmod } from 'node:fs/promises'
+import { access, mkdir, writeFile, chmod } from 'node:fs/promises'
 const program = new Command()
 
 enum NetworkNames {
@@ -159,9 +159,11 @@ const lc = async (options: {
   upgrade: boolean,
 }): Promise<void> => {
   try {
-    let cmd = `curl -sL1 avail.sh | sh -s -- --network ${options.network}`
+    let cmd = `curl -sL1 avail.sh | sh -s --`
     if (typeof (options.config) !== 'undefined') {
       cmd = cmd.concat(` --config ${options.config}`)
+    } else {
+      cmd = cmd.concat(` --network ${options.network}`)
     }
     if (typeof (options.identity) !== 'undefined') {
       cmd = cmd.concat(` --identity ${options.identity}`)
@@ -184,7 +186,12 @@ const lc = async (options: {
 
 const setId = async (seed: string): Promise<void> => {
   try {
-    await writeFile(`${process.env.HOME as string}/.availup/identity.toml`, seed)
+    try {
+      await access("path");
+    } catch (error) {
+      mkdir(`${process.env.HOME as string}/.availup`)
+    }
+    await writeFile(`${process.env.HOME as string}/.availup/identity.toml`, `avail_secret_seed_phrase = '${seed}'`)
     await chmod(`${process.env.HOME as string}/.availup/identity.toml`, 0o700)
   } catch (err) {
     console.error(err)
