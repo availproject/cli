@@ -155,7 +155,8 @@ async function data(blob: string, options: {
 const lc = async (options: {
   network: NetworkNames
   config: string
-  identity: string
+  identity: string,
+  upgrade: boolean,
 }): Promise<void> => {
   try {
     let cmd = `curl -sL1 avail.sh | sh -s -- --network ${options.network}`
@@ -164,6 +165,9 @@ const lc = async (options: {
     }
     if (typeof (options.identity) !== 'undefined') {
       cmd = cmd.concat(` --identity ${options.identity}`)
+    }
+    if (options.upgrade) {
+      cmd = cmd.concat(` --upgrade y`)
     }
     const child: any = spawn(cmd, { cwd: process.cwd(), shell: true, stdio: 'inherit' })
     child.on('close', (code: number) => {
@@ -215,6 +219,7 @@ program
   .addOption(new Option('-n, --network <network name>', 'network name').choices(['kate', 'goldberg', 'local']).default('goldberg').makeOptionMandatory())
   .option('-i, --identity <identity>', 'the identity to use')
   .option('-c, --config <path to config file>', 'the config file to use')
+  .option('-u, --upgrade', 'upgrade the version of the light client')
   .action(lc)
 
 program

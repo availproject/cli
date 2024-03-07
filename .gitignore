@@ -2,3 +2,5 @@ node_modules
 .DS_Store
 index.js
 build
+avail_path
+identity.toml
