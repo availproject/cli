@@ -6,6 +6,7 @@ import { ISubmittableResult } from '@polkadot/types/types'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { BN } from '@polkadot/util'
 import { spawn } from 'child_process'
+import { writeFile, chmod } from 'node:fs/promises';
 const program = new Command()
 
 enum NetworkNames {
@@ -29,7 +30,7 @@ const NETWORK_RPC_URLS: { kate: string, goldberg: string, local: string } = {
 program
   .name('avail')
   .description('A simple CLI for Avail network utilities')
-  .version('0.1.11')
+  .version('0.1.12')
 
 const sendTransferTx = async (api: any, to: string, amount: BN, keyring: KeyringPair, opt: Partial<any>, network: NetworkNames, wait: Wait): Promise<void> => {
   return await new Promise((resolve, reject) => {
@@ -153,12 +154,16 @@ async function data(blob: string, options: {
 
 const lc = async (options: {
   network: NetworkNames
-  config: string
+  config: string,
+  identity: string
 }): Promise<void> => {
   try {
     let cmd = `curl -sL1 avail.sh | sh -s -- --network ${options.network}`
     if (typeof (options.config) !== 'undefined') {
       cmd = cmd.concat(` --config ${options.config}`)
+    }
+    if (typeof (options.identity) !== 'undefined') {
+      cmd = cmd.concat(` --identity ${options.identity}`)
     }
     const child: any = spawn(cmd, { cwd: process.cwd(), shell: true, stdio: 'inherit' })
     child.on('close', (code: number) => {
@@ -167,6 +172,16 @@ const lc = async (options: {
     child.on('exit', (code: number) => {
       process.exit(code)
     })
+  } catch (err) {
+    console.error(err)
+    process.exit(1)
+  }
+}
+
+const setId = async (seed: string): Promise<void> => {
+  try {
+    await writeFile(`${process.env.HOME}/.availup/identity.toml`, seed)
+    await chmod(`${process.env.HOME}/.availup/identity.toml`, 0o700)
   } catch (err) {
     console.error(err)
     process.exit(1)
@@ -198,7 +213,13 @@ program
   .command('lc').description('Utilities to operate an Avail light client')
   .command('up').description('Spawns a new Avail light client or runs an existing one')
   .addOption(new Option('-n, --network <network name>', 'network name').choices(['kate', 'goldberg', 'local']).default('goldberg').makeOptionMandatory())
+  .option('-i, --identity <identity>', 'the identity to use')
   .option('-c, --config <path to config file>', 'the config file to use')
   .action(lc)
+
+program
+  .command('set-id').description('Creates an identity file for the light client')
+  .addArgument(new Argument('<seed>', 'the seed phrase for the avail account'))
+  .action(setId)
 
 program.parse()
