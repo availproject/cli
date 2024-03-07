@@ -6,7 +6,7 @@ import { ISubmittableResult } from '@polkadot/types/types'
 import { KeyringPair } from '@polkadot/keyring/types'
 import { BN } from '@polkadot/util'
 import { spawn } from 'child_process'
-import { writeFile, chmod } from 'node:fs/promises';
+import { writeFile, chmod } from 'node:fs/promises'
 const program = new Command()
 
 enum NetworkNames {
@@ -154,7 +154,7 @@ async function data(blob: string, options: {
 
 const lc = async (options: {
   network: NetworkNames
-  config: string,
+  config: string
   identity: string
 }): Promise<void> => {
   try {
@@ -180,8 +180,8 @@ const lc = async (options: {
 
 const setId = async (seed: string): Promise<void> => {
   try {
-    await writeFile(`${process.env.HOME}/.availup/identity.toml`, seed)
-    await chmod(`${process.env.HOME}/.availup/identity.toml`, 0o700)
+    await writeFile(`${process.env.HOME as string}/.availup/identity.toml`, seed)
+    await chmod(`${process.env.HOME as string}/.availup/identity.toml`, 0o700)
   } catch (err) {
     console.error(err)
     process.exit(1)
