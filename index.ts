@@ -159,7 +159,7 @@ const lc = async (options: {
   upgrade: boolean,
 }): Promise<void> => {
   try {
-    let cmd = `curl -sL1 avail.sh | sh -s --`
+    let cmd = `curl -sL1 avail.sh | bash -s --`
     if (typeof (options.config) !== 'undefined') {
       cmd = cmd.concat(` --config ${options.config}`)
     } else {
