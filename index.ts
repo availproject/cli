@@ -30,7 +30,7 @@ const NETWORK_RPC_URLS: { kate: string, goldberg: string, local: string } = {
 program
   .name('avail')
   .description('A simple CLI for Avail network utilities')
-  .version('0.1.12')
+  .version('0.1.13')
 
 const sendTransferTx = async (api: any, to: string, amount: BN, keyring: KeyringPair, opt: Partial<any>, network: NetworkNames, wait: Wait): Promise<void> => {
   return await new Promise((resolve, reject) => {
@@ -156,7 +156,7 @@ const lc = async (options: {
   network: NetworkNames
   config: string
   identity: string,
-  upgrade: boolean,
+  noUpgrade: boolean,
 }): Promise<void> => {
   try {
     let cmd = `curl -sL1 avail.sh | bash -s --`
@@ -168,7 +168,7 @@ const lc = async (options: {
     if (typeof (options.identity) !== 'undefined') {
       cmd = cmd.concat(` --identity ${options.identity}`)
     }
-    if (options.upgrade) {
+    if (!options.noUpgrade) {
       cmd = cmd.concat(` --upgrade y`)
     }
     const child: any = spawn(cmd, { cwd: process.cwd(), shell: true, stdio: 'inherit' })
@@ -226,7 +226,7 @@ program
   .addOption(new Option('-n, --network <network name>', 'network name').choices(['kate', 'goldberg', 'local']).default('goldberg').makeOptionMandatory())
   .option('-i, --identity <identity>', 'the identity to use')
   .option('-c, --config <path to config file>', 'the config file to use')
-  .option('-u, --upgrade', 'upgrade the version of the light client')
+  .option('-nu, --no-upgrade', 'do not upgrade the version of the light client')
   .action(lc)
 
 program
