@@ -10,8 +10,7 @@ import { access, mkdir, writeFile, chmod } from 'node:fs/promises'
 const program = new Command()
 
 enum NetworkNames {
-  Kate = 'kate',
-  Goldberg = 'goldberg',
+  Turing = 'turing',
   Local = 'local'
 }
 
@@ -21,9 +20,8 @@ enum Wait {
   Final = 'final'
 }
 
-const NETWORK_RPC_URLS: { kate: string, goldberg: string, local: string } = {
-  kate: 'wss://kate.avail.tools/ws',
-  goldberg: 'wss://goldberg.avail.tools/ws',
+const NETWORK_RPC_URLS: { turing: string, local: string } = {
+  turing: 'wss://avail-turing.public.blastapi.io',
   local: 'wss://127.0.0.1:9944/ws'
 }
 
@@ -184,25 +182,10 @@ const lc = async (options: {
   }
 }
 
-const setId = async (seed: string): Promise<void> => {
-  try {
-    try {
-      await access("path");
-    } catch (error) {
-      mkdir(`${process.env.HOME as string}/.availup`)
-    }
-    await writeFile(`${process.env.HOME as string}/.availup/identity.toml`, `avail_secret_seed_phrase = '${seed}'`)
-    await chmod(`${process.env.HOME as string}/.availup/identity.toml`, 0o700)
-  } catch (err) {
-    console.error(err)
-    process.exit(1)
-  }
-}
-
 program
   .command('transfer').description('Transfer AVL token to another account')
-  .addOption(new Option('-n, --network <network name>', 'network name').choices(['kate', 'goldberg', 'local']).default('goldberg').conflicts('rpc'))
-  .addOption(new Option('-r, --rpc <RPC url>', 'the RPC url to connect to').env('AVAIL_RPC_URL').default(NETWORK_RPC_URLS.goldberg))
+  .addOption(new Option('-n, --network <network name>', 'network name').choices(['turing', 'local']).default('turing').conflicts('rpc'))
+  .addOption(new Option('-r, --rpc <RPC url>', 'the RPC url to connect to').env('AVAIL_RPC_URL').default(NETWORK_RPC_URLS.turing))
   .addOption(new Option('-s, --seed <seed phrase>', 'the seed phrase for the Avail account').env('AVAIL_SEED').makeOptionMandatory())
   .addOption(new Option('-w, --wait <status>', 'wait for extrinsic inclusion').choices(['yes', 'no', 'final']).default('yes'))
   .argument('<to>', 'the recipient address')
@@ -212,8 +195,8 @@ program
 program
   .command('data').description('Utilities to operate with data on Avail network')
   .command('submit').description('Submit a data blob to an Avail network')
-  .addOption(new Option('-n, --network <network name>', 'network name').choices(['kate', 'goldberg', 'local']).default('goldberg').conflicts('rpc'))
-  .addOption(new Option('-r, --rpc <RPC url>', 'the RPC url to connect to').env('AVAIL_RPC_URL').default(NETWORK_RPC_URLS.goldberg))
+  .addOption(new Option('-n, --network <network name>', 'network name').choices(['turing', 'local']).default('turing').conflicts('rpc'))
+  .addOption(new Option('-r, --rpc <RPC url>', 'the RPC url to connect to').env('AVAIL_RPC_URL').default(NETWORK_RPC_URLS.turing))
   .addOption(new Option('-s, --seed <seed phrase>', 'the seed phrase for the Avail account').env('AVAIL_SEED').makeOptionMandatory())
   .addOption(new Option('-a, --app-id <app ID>', 'the blob will be submitted with this app ID').default(0))
   .addOption(new Option('-w, --wait <status>', 'wait for extrinsic inclusion').choices(['yes', 'no', 'final']).default('yes'))
@@ -223,15 +206,10 @@ program
 program
   .command('lc').description('Utilities to operate an Avail light client')
   .command('up').description('Spawns a new Avail light client or runs an existing one')
-  .addOption(new Option('-n, --network <network name>', 'network name').choices(['kate', 'goldberg', 'local']).default('goldberg').makeOptionMandatory())
+  .addOption(new Option('-n, --network <network name>', 'network name').choices(['turing', 'local']).default('turing').makeOptionMandatory())
   .option('-i, --identity <identity>', 'the identity to use')
   .option('-c, --config <path to config file>', 'the config file to use')
   .option('-nu, --no-upgrade', 'do not upgrade the version of the light client')
   .action(lc)
-
-program
-  .command('set-id').description('Creates an identity file for the light client')
-  .addArgument(new Argument('<seed>', 'the seed phrase for the avail account'))
-  .action(setId)
 
 program.parse()
