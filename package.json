@@ -10,7 +10,7 @@
     "url": "git+https://github.com/availproject/cli.git"
   },
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "keywords": [
     "avail",
