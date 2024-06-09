@@ -30,14 +30,14 @@
   "author": "QEDK",
   "license": "Apache-2.0",
   "dependencies": {
-    "avail-js-sdk": "^0.1.7",
-    "commander": "^11.1.0"
+    "avail-js-sdk": "^0.2.12",
+    "commander": "^12.1.0"
   },
   "devDependencies": {
-    "@polkadot/types": "^10.10.1",
-    "@types/node": "^20.9.0",
+    "@polkadot/types": "^11.2.1",
+    "@types/node": "^20.14.2",
     "ts-standard": "^12.0.2",
-    "typescript": "^5.2.2"
+    "typescript": "^5.4.5"
   },
   "bin": {
     "avail": "index.js"
