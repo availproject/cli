@@ -28,7 +28,7 @@ const NETWORK_RPC_URLS: { turing: string, local: string } = {
 program
   .name('avail')
   .description('A simple CLI for Avail network utilities')
-  .version('0.1.13')
+  .version('0.1.14')
 
 const sendTransferTx = async (api: any, to: string, amount: BN, keyring: KeyringPair, opt: Partial<any>, network: NetworkNames, wait: Wait): Promise<void> => {
   return await new Promise((resolve, reject) => {

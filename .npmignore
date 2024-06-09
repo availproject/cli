@@ -2,3 +2,5 @@ node_modules
 .DS_Store
 index.ts
 tsconfig.json
+avail_path
+identity.toml
