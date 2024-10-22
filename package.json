@@ -37,7 +37,8 @@
 	},
 	"overrides": {
 		"@polkadot/util": "^12.6",
-		"@polkadot/types": "^10.13"
+		"@polkadot/types": "^10.13",
+    "ws": "^8.17.1"
 	},
 	"trustedDependencies": ["@biomejs/biome"]
 }
