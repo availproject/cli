@@ -1,16 +1,16 @@
 #!/usr/bin/env node
 import { spawn } from "node:child_process";
+import type { SignerOptions } from "@polkadot/api/types";
 import type { KeyringPair } from "@polkadot/keyring/types";
-import type { ISubmittableResult } from "@polkadot/types/types";
 import type { BN } from "@polkadot/util";
 import {
+	type ApiPromise,
 	formatNumberToBalance,
 	getKeyringFromSeed,
 	initialize,
 	isValidAddress,
 } from "avail-js-sdk";
 import { Argument, Command, Option } from "commander";
-const program = new Command();
 
 enum NetworkNames {
 	Mainnet = "mainnet",
@@ -38,24 +38,26 @@ const EXPLORER_URLS: { mainnet: string; turing: string; local: string } = {
 	local: "https://explorer.availproject.org/?rpc=wss://127.0.0.1:9944/ws",
 };
 
+const program = new Command();
+
 program
 	.name("avail")
 	.description("A simple CLI for Avail network utilities")
 	.version("0.1.15");
 
 const sendTransferTx = async (
-	api: any,
+	api: ApiPromise,
 	to: string,
 	amount: BN,
 	keyring: KeyringPair,
-	opt: Partial<any>,
+	opt: Partial<SignerOptions>,
 	network: NetworkNames,
 	wait: Wait,
 ): Promise<void> => {
 	return await new Promise((resolve, reject) => {
 		api.tx.balances
 			.transfer(to, amount)
-			.signAndSend(keyring, opt, (result: ISubmittableResult) => {
+			.signAndSend(keyring, opt, (result) => {
 				if (wait === Wait.Yes && result.status.isInBlock) {
 					console.log(
 						`✅ Transfer included at block hash: ${String(result.status.asInBlock)}`,
@@ -108,11 +110,11 @@ const transfer = async (
 
 		const tempConsoleWarn = console.warn;
 		console.warn = () => {};
-		const api = await initialize(rpcUrl, { noInitWarn: true });
+		const api: ApiPromise = await initialize(rpcUrl, { noInitWarn: true });
 		console.warn = tempConsoleWarn;
 		const keyring = getKeyringFromSeed(seed);
 		const amount = formatNumberToBalance(value);
-		const opt: Partial<any> = { nonce: -1 };
+		const opt: Partial<{ nonce: number }> = { nonce: -1 };
 		if (options.wait !== Wait.No) {
 			await sendTransferTx(
 				api,
@@ -135,17 +137,17 @@ const transfer = async (
 };
 
 const sendBlobTx = async (
-	api: any,
+	api: ApiPromise,
 	blob: string,
 	keyring: KeyringPair,
-	opt: Partial<any>,
+	opt: Partial<SignerOptions>,
 	network: NetworkNames,
 	wait: Wait,
 ): Promise<void> => {
 	return await new Promise((resolve, reject) => {
 		api.tx.dataAvailability
 			.submitData(blob)
-			.signAndSend(keyring, opt, (result: ISubmittableResult) => {
+			.signAndSend(keyring, opt, (result) => {
 				if (wait === Wait.Yes && result.status.isInBlock) {
 					console.log(
 						`✅ Blob included at block hash: ${String(result.status.asInBlock)}`,
@@ -198,7 +200,10 @@ async function data(
 		const api = await initialize(rpcUrl, { noInitWarn: true });
 		console.warn = tempConsoleWarn;
 		const keyring = getKeyringFromSeed(seed);
-		const opt: Partial<any> = { app_id: options.appId, nonce: -1 };
+		const opt: Partial<{ app_id: number; nonce: number }> = {
+			app_id: options.appId,
+			nonce: -1,
+		};
 		if (options.wait !== Wait.No) {
 			await sendBlobTx(api, blob, keyring, opt, options.network, options.wait);
 		} else {
@@ -231,7 +236,7 @@ const lc = async (options: {
 		if (!options.noUpgrade) {
 			cmd = cmd.concat(" --upgrade y");
 		}
-		const child: any = spawn(cmd, {
+		const child = spawn(cmd, {
 			cwd: process.cwd(),
 			shell: true,
 			stdio: "inherit",

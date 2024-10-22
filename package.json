@@ -15,10 +15,10 @@
 	"keywords": ["avail", "data", "blockchain", "sdk", "typescript", "cli"],
 	"type": "module",
 	"scripts": {
-		"build": "tsc",
-		"build:publish": "tsc && npm publish --access=public",
-		"script": "tsc && node index.js",
-		"lint": "npx ts-standard --fix"
+		"build": "npx tsc",
+		"build:publish": "npx tsc && npm publish --access=public",
+		"script": "node index.js",
+		"lint": "npx biome check --write ."
 	},
 	"author": "QEDK",
 	"license": "Apache-2.0",
@@ -27,7 +27,7 @@
 		"commander": "^12.1"
 	},
 	"devDependencies": {
-		"@biomejs/biome": "1.9.4",
+		"@biomejs/biome": "^1.9",
 		"@polkadot/types": "^14.1",
 		"@types/node": "^22.7",
 		"typescript": "^5.4"
