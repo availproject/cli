@@ -1,44 +1,44 @@
 {
-	"name": "@availproject/cli",
-	"version": "0.1.15",
-	"description": "A simple CLI for Avail utilities",
-	"main": "index.js",
-	"bugs": "https://github.com/availproject/cli/issues",
-	"homepage": "https://github.com/availproject/cli#readme",
-	"repository": {
-		"type": "git",
-		"url": "git+https://github.com/availproject/cli.git"
-	},
-	"engines": {
-		"node": ">=18"
-	},
-	"keywords": ["avail", "data", "blockchain", "sdk", "typescript", "cli"],
-	"type": "module",
-	"scripts": {
-		"build": "npx tsc",
-		"build:publish": "npx tsc && npm publish --access=public",
-		"script": "node index.js",
-		"lint": "npx biome check --write ."
-	},
-	"author": "QEDK",
-	"license": "Apache-2.0",
-	"dependencies": {
-		"avail-js-sdk": "^0.2",
-		"commander": "^12.1"
-	},
-	"devDependencies": {
-		"@biomejs/biome": "^1.9",
-		"@polkadot/types": "^10.13",
-		"@types/node": "^22.7",
-		"typescript": "^5.4"
-	},
-	"bin": {
-		"avail": "index.js"
-	},
-	"overrides": {
-		"@polkadot/util": "^12.6",
-		"@polkadot/types": "^10.13",
+  "name": "@availproject/cli",
+  "version": "0.1.15",
+  "description": "A simple CLI for Avail utilities",
+  "main": "index.js",
+  "bugs": "https://github.com/availproject/cli/issues",
+  "homepage": "https://github.com/availproject/cli#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/availproject/cli.git"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "keywords": ["avail", "data", "blockchain", "sdk", "typescript", "cli"],
+  "type": "module",
+  "scripts": {
+    "build": "npx tsc",
+    "build:publish": "npx tsc && npm publish --access=public",
+    "script": "node index.js",
+    "lint": "npx biome check --write ."
+  },
+  "author": "QEDK",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "avail-js-sdk": "^0.2",
+    "commander": "^12.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9",
+    "@polkadot/types": "^10.13",
+    "@types/node": "^22.7",
+    "typescript": "^5.4"
+  },
+  "bin": {
+    "avail": "index.js"
+  },
+  "overrides": {
+    "@polkadot/util": "^12.6",
+    "@polkadot/types": "^10.13",
     "ws": "^8.17.1"
-	},
-	"trustedDependencies": ["@biomejs/biome"]
+  },
+  "trustedDependencies": ["@biomejs/biome"]
 }
