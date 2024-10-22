@@ -154,7 +154,7 @@ const sendBlobTx = async (
 					);
 					if (typeof network !== "undefined") {
 						console.log(
-							`🧭 Link to explorer: https://${network as string}.avail.tools/#/explorer/query/${String(result.status.asInBlock)}`,
+							`🧭 Link to explorer: ${EXPLORER_URLS[network]}/#/explorer/query/${String(result.status.asInBlock)}`,
 						);
 					}
 					resolve();
@@ -164,7 +164,7 @@ const sendBlobTx = async (
 					);
 					if (typeof network !== "undefined") {
 						console.log(
-							`🧭 Link to explorer: https://${network as string}.avail.tools/#/explorer/query/${String(result.status.asFinalized)}`,
+							`🧭 Link to explorer: ${EXPLORER_URLS[network]}/#/explorer/query/${String(result.status.asFinalized)}`,
 						);
 					}
 					resolve();

@@ -28,12 +28,16 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9",
-		"@polkadot/types": "^14.1",
+		"@polkadot/types": "^10.13",
 		"@types/node": "^22.7",
 		"typescript": "^5.4"
 	},
 	"bin": {
 		"avail": "index.js"
+	},
+	"overrides": {
+		"@polkadot/util": "^12.6",
+		"@polkadot/types": "^10.13"
 	},
 	"trustedDependencies": ["@biomejs/biome"]
 }
